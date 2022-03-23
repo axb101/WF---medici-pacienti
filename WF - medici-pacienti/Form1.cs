@@ -40,16 +40,6 @@ namespace WF___medici_pacienti
             lv.Tag = p2;
             listView2.Items.Add(lv);
 
-            TreeNode t = new TreeNode(m1.NumePrenume + " " + m1.Specializare);            
-            t.Tag = m1;
-            treeView1.Nodes.Add(t);
-            t.Nodes.Add(new TreeNode(p1.NumePrenume + " " + p1.Cnp));
-            t.Nodes.Add(new TreeNode(p2.NumePrenume + " " + p2.Cnp));
-
-            t = new TreeNode(m2.NumePrenume + " " + m2.Specializare);
-            t.Tag = m2;
-            treeView1.Nodes.Add(t);
-
         }
 
         private void listView2_SelectedIndexChanged(object sender, EventArgs e)
@@ -73,50 +63,5 @@ namespace WF___medici_pacienti
             }
         }
 
-        private void buttonEditeazaMedic_Click(object sender, EventArgs e)
-        {
-            Medic mForm1=(Medic)listView1.SelectedItems[0].Tag;
-            
-            FormMedic fm = new FormMedic(mForm1);
-            fm.ShowDialog();
-
-            if (fm.DialogResult == DialogResult.OK)
-            {
-                ListViewItem lv = listView1.SelectedItems[0];
-                lv.Text = mForm1.NumePrenume;
-                lv.SubItems[1].Text = mForm1.Cnp;
-                lv.SubItems[2].Text = mForm1.Specializare;
-
-            }
-        }
-
-        private void toolStripMenuItemAdaugaMedic_Click(object sender, EventArgs e)
-        {
-            button1_Click(sender, e);
-        }
-
-        private void toolStripMenuItemModificaMedic_Click(object sender, EventArgs e)
-        {
-            buttonEditeazaMedic_Click(sender, e);
-        }
-
-        private void toolStripMenuItemStergeMedic_Click(object sender, EventArgs e)
-        {
-            listView1.SelectedItems[0].Remove();
-        }
-
-        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
-        {
-            if (listView1.SelectedItems.Count > 0)
-            {
-                toolStripMenuItemModificaMedic.Enabled = true;
-                toolStripMenuItemStergeMedic.Enabled = true;
-            }
-            else
-            {
-                toolStripMenuItemModificaMedic.Enabled = false;
-                toolStripMenuItemStergeMedic.Enabled = false;
-            }
-        }
     }
 }
