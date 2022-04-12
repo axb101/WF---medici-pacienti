@@ -43,5 +43,17 @@ namespace WF___medici_pacienti
             mFormMedic.AnAbsolvire = Convert.ToInt32(comboBoxAn.Text);
             mFormMedic.Specializare = comboBoxSpecializare.Text;
         }
+
+        private void textBoxNume_Validating(object sender, CancelEventArgs e)
+        {
+            if (textBoxNume.Text.Length < 5)
+            {
+                e.Cancel = true;
+                errorProvider1.SetError(textBoxNume, "Numele este prea scurt");
+            }
+            else
+                errorProvider1.SetError(textBoxNume, "");
+
+        }
     }
 }

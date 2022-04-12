@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace WF___medici_pacienti
 {
@@ -41,10 +44,11 @@ namespace WF___medici_pacienti
             listView2.Items.Add(lv);
 
             TreeNode t = new TreeNode(m1.NumePrenume + " " + m1.Specializare);            
+            
             t.Tag = m1;
-            treeView1.Nodes.Add(t);
-            t.Nodes.Add(new TreeNode(p1.NumePrenume + " " + p1.Cnp));
-            t.Nodes.Add(new TreeNode(p2.NumePrenume + " " + p2.Cnp));
+            treeView1.Nodes.Add(m1.NumePrenume + " " + m1.Specializare,m1.NumePrenume + " " + m1.Specializare);
+            //t.Nodes.Add(new TreeNode(p1.NumePrenume + " " + p1.Cnp));
+            //t.Nodes.Add(new TreeNode(p2.NumePrenume + " " + p2.Cnp));
 
             t = new TreeNode(m2.NumePrenume + " " + m2.Specializare);
             t.Tag = m2;
@@ -116,6 +120,134 @@ namespace WF___medici_pacienti
             {
                 toolStripMenuItemModificaMedic.Enabled = false;
                 toolStripMenuItemStergeMedic.Enabled = false;
+            }
+        }
+        private void salveazaBinarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog fd = new SaveFileDialog();
+            fd.Filter = "fisiere persoane (*.prs)|*.prs";
+            fd.CheckPathExists = true;
+
+            if (fd.ShowDialog() == DialogResult.OK)
+            {
+                List<Pacient> lista = new List<Pacient>();
+                foreach (ListViewItem lv in listView2.Items)
+                    lista.Add((Pacient)lv.Tag);
+
+                BinaryFormatter serializator = new BinaryFormatter();
+                Stream fisier = File.Create(fd.FileName);
+
+                serializator.Serialize(fisier, lista);
+                fisier.Close();
+            }
+        }
+
+        private void deschideBinarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fd = new OpenFileDialog();
+            fd.Filter = "fisiere persoane (*.prs)|*.prs";
+            fd.CheckFileExists = true;
+
+            if (fd.ShowDialog() == DialogResult.OK)
+            {
+                List<Pacient> lista = new List<Pacient>();
+
+                BinaryFormatter serializator = new BinaryFormatter();
+                Stream fisier = File.OpenRead(fd.FileName);
+
+                lista.AddRange((List<Pacient>)serializator.Deserialize(fisier));
+                fisier.Close();
+
+                //listView2.Items.Clear();
+                foreach (Pacient p in lista)
+                {
+                    ListViewItem lv = new ListViewItem(
+                        new string[] { p.NumePrenume, p.Cnp, p.CardSanatate });
+                    lv.Tag = p;
+                    listView2.Items.Add(lv);
+                }
+            }
+        }
+
+        private void salveazaXMLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog fd = new SaveFileDialog();
+            fd.Filter = "fisiere persoane (*.xml)|*.xml";
+            fd.CheckPathExists = true;
+
+            if (fd.ShowDialog() == DialogResult.OK)
+            {
+                List<Pacient> lista = new List<Pacient>();
+                foreach (ListViewItem lv in listView2.Items)
+                    lista.Add((Pacient)lv.Tag);
+
+                XmlSerializer serializator = new
+                    XmlSerializer(typeof(List<Pacient>));
+                TextWriter writer = new StreamWriter(fd.FileName);
+                serializator.Serialize(writer, lista);
+
+                writer.Close();
+            }
+        }
+
+        private void deschideXMLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fd = new OpenFileDialog();
+            fd.Filter = "fisiere persoane (*.xml)|*.xml";
+            fd.CheckFileExists = true;
+
+            if (fd.ShowDialog() == DialogResult.OK)
+            {
+                List<Pacient> lista = new List<Pacient>();
+
+                Stream reader = new FileStream(fd.FileName, FileMode.Open);
+                XmlSerializer serializator = new
+                        XmlSerializer(typeof(List<Pacient>));
+
+                lista.AddRange((List<Pacient>)serializator.Deserialize(reader));
+
+                reader.Close();
+
+                //listView2.Items.Clear();
+
+                foreach (Pacient p in lista)
+                {
+                    ListViewItem lv = new ListViewItem(
+                        new string[] { p.NumePrenume, p.Cnp, p.CardSanatate });
+                    lv.Tag = p;
+                    listView2.Items.Add(lv);
+                }
+
+            }
+        }
+
+        private void listView2_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (listView2.SelectedItems.Count > 0)
+            {
+                listView2.DoDragDrop(listView2.SelectedItems[0].Tag, DragDropEffects.Link);
+            }
+         }
+
+        private void listView1_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Link;
+        }
+
+        private void listView1_DragDrop(object sender, DragEventArgs e)
+        {
+            Point punct = new Point(e.X, e.Y);
+            Point punctDinListView = listView1.PointToClient(
+                new Point(punct.X, punct.Y));
+            ListViewItem lv = 
+                listView1.GetItemAt(punctDinListView.X,punctDinListView.Y);
+            if (!(lv is null)&&e.Data.GetDataPresent(new Pacient().GetType().ToString()))
+            {
+                Medic m = (Medic)lv.Tag;
+
+                TreeNode t = treeView1.Nodes.Find(m.NumePrenume+ " "+ m.Specializare, true)[0];
+                Pacient p=(Pacient)e.Data.GetData(new Pacient().GetType().ToString());
+                t.Nodes.Add(new TreeNode(p.NumePrenume + " " + p.Cnp));
             }
         }
     }

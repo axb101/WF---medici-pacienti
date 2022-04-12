@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WF___medici_pacienti
-{
+{[Serializable]
     public class Pacient:Persoana
     {
         public string CardSanatate;
